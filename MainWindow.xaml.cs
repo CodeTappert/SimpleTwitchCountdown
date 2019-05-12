@@ -24,25 +24,21 @@ namespace SimpleTwitchTimer
     /// </summary>
     public partial class MainWindow : Window
     {
-        byte hasStopped,isRunning;
+        bool isNewStart;
+        byte isRunning;
         int duration, currentTime;
         System.Timers.Timer timer = new System.Timers.Timer();
         public MainWindow()
         {
             InitializeComponent();
             RadioMinutes.IsChecked = true; //Preselect this Radio Button
-            timer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
+            isNewStart = true;
 
             if (!File.Exists("Timer.txt"))
             {
                 FileStream file = new FileStream("Timer.txt", FileMode.Create); //file is created
                 file.Close();
             }
-        }
-
-        private void OnTimedEvent(object sender, ElapsedEventArgs e)
-        {
-            hasStopped = 1;
         }
 
         private void TextBoxInput_TextChanged(object sender, TextChangedEventArgs e)
@@ -63,9 +59,10 @@ namespace SimpleTwitchTimer
             e.Handled = regex.IsMatch(e.Text);
         }
 
-        private void ButtonStartPause_Click(object sender, RoutedEventArgs e)
+        private async void ButtonStartPause_Click(object sender, RoutedEventArgs e)
         {
-            if (isRunning == 0)
+            Console.WriteLine(isNewStart);
+            if (isRunning == 0 && isNewStart)
             {
                 if (Convert.ToBoolean(RadioMinutes.IsChecked))
                 {
@@ -76,19 +73,27 @@ namespace SimpleTwitchTimer
                     duration = int.Parse(TextBoxInput.Text);
                 }
                 currentTime = duration;
-                //Need To do Threading here. 
-                SetTimer(currentTime);
-                timer.Start();
-                while (hasStopped == 0)
-                {
-                    SetToFile(MakeToString(currentTime));
-                    System.Threading.Thread.Sleep(1000);
-                }
+
+                isRunning = 1;
+                ButtonStartPause.Content = "Pause";
+                await Task.Run(() => TimerStart(currentTime));
+
+
+
 
             }
-
-            //Timer(currentTime);
-
+            else if(isRunning==0 && !isNewStart)
+            {
+                isRunning = 1;
+                ButtonStartPause.Content = "Pause";
+                await Task.Run(() => TimerStart(currentTime));
+            }
+            else
+            {
+                isRunning = 0;
+                isNewStart = false;
+                ButtonStartPause.Content = "Start";
+            }
 
         }
 
@@ -97,20 +102,30 @@ namespace SimpleTwitchTimer
             timer.Interval = currentTimeInS;
 
         }
-        private void Timer(int currentTime)
+        private  void TimerStart(int seconds)
         {
-            while (currentTime != 0)
+            while (seconds != 0 && isRunning == 1)
             {
-                SetToFile(MakeToString(currentTime));
+                Console.WriteLine(seconds);
+                SetToFile(MakeToString(seconds));
 
                 System.Threading.Thread.Sleep(1000);
+                seconds--;
                 currentTime--;
+
+            }
+            if (seconds == 0)
+            {
+                isNewStart = true; //If Finished Set to Start all over again.
             }
         }
 
         private void ButtonReset_Click(object sender, RoutedEventArgs e)
         {
-
+            isRunning = 0;
+            isNewStart = true;
+            currentTime = duration;
+            SetToFile(MakeToString(currentTime));
         }
 
         private void RadioMinutes_Checked(object sender, RoutedEventArgs e)
