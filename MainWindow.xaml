@@ -1,0 +1,17 @@
+﻿<Window x:Class="SimpleTwitchTimer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SimpleTwitchTimer"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="155" Width="400.5">
+    <Grid HorizontalAlignment="Left" Height="122" VerticalAlignment="Top" Width="390">
+        <TextBox Name="TextBoxInput" Height="60" Margin="8,8,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="248" RenderTransformOrigin="-0.212,-1.5" FontSize="40" TextChanged="TextBoxInput_TextChanged" VerticalContentAlignment="Center"
+                 HorizontalAlignment="Left" TextAlignment="Center" Text="500" PreviewTextInput="NumberValidationTextBox" MaxLength="6"/>
+        <RadioButton Name="RadioMinutes"  Content="Minutes" HorizontalAlignment="Left" Margin="261,10,0,0" VerticalAlignment="Top" Height="26" Width="100" FontSize="15" VerticalContentAlignment="Center" Checked="RadioMinutes_Checked"/>
+        <RadioButton Name="RadioSeconds" Content="Seconds" HorizontalAlignment="Left" Margin="261,41,0,0" VerticalAlignment="Top" Height="25" Width="100" FontSize="15" VerticalContentAlignment="Center" Checked="RadioSeconds_Checked"/>
+        <Button Name="ButtonStartPause" Content="Start" HorizontalAlignment="Left" Margin="8,71,0,0" VerticalAlignment="Top" Width="120" Height="40" Click="ButtonStartPause_Click"/>
+        <Button Name="ButtonReset" Content="Reset" HorizontalAlignment="Left" Margin="134,71,0,0" VerticalAlignment="Top" Width="120" Height="40" Click="ButtonReset_Click"/>
+    </Grid>
+</Window>
