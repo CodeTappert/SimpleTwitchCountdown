@@ -24,7 +24,7 @@ namespace SimpleTwitchTimer
     /// </summary>
     public partial class MainWindow : Window
     {
-        bool isNewStart;
+        bool isNewStart = true,hasEnded;
         byte isRunning;
         int duration, currentTime;
         System.Timers.Timer timer = new System.Timers.Timer();
@@ -32,9 +32,8 @@ namespace SimpleTwitchTimer
         {
             InitializeComponent();
             RadioMinutes.IsChecked = true; //Preselect this Radio Button
-            isNewStart = true;
 
-            if (!File.Exists("Timer.txt"))
+            if (!File.Exists("Timer.txt")) //Check if file already exists
             {
                 FileStream file = new FileStream("Timer.txt", FileMode.Create); //file is created
                 file.Close();
@@ -43,6 +42,8 @@ namespace SimpleTwitchTimer
 
         private void TextBoxInput_TextChanged(object sender, TextChangedEventArgs e)
         {
+            isNewStart = true;
+            isRunning = 0;
             //Check for Spaces and automaticly trim them.
             if (TextBoxInput.Text.Contains(" "))
             {
@@ -61,48 +62,85 @@ namespace SimpleTwitchTimer
 
         private async void ButtonStartPause_Click(object sender, RoutedEventArgs e)
         {
-            Console.WriteLine(isNewStart);
-            if (isRunning == 0 && isNewStart)
+            hasEnded = true;
+            if (TextBoxInput.Text.Length == 0)
             {
-                if (Convert.ToBoolean(RadioMinutes.IsChecked))
-                {
-                    duration = int.Parse(TextBoxInput.Text) * 60;
-                }
-                else
-                {
-                    duration = int.Parse(TextBoxInput.Text);
-                }
-                currentTime = duration;
-
-                isRunning = 1;
-                ButtonStartPause.Content = "Pause";
-                await Task.Run(() => TimerStart(currentTime));
-
-
-
-
-            }
-            else if(isRunning==0 && !isNewStart)
-            {
-                isRunning = 1;
-                ButtonStartPause.Content = "Pause";
-                await Task.Run(() => TimerStart(currentTime));
+                MessageBox.Show("An empty Input is not allowed!", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             else
             {
-                isRunning = 0;
-                isNewStart = false;
-                ButtonStartPause.Content = "Start";
+                Console.WriteLine(isNewStart);
+                if (isRunning == 0 && isNewStart)
+                {
+                    if (Convert.ToBoolean(RadioMinutes.IsChecked))
+                    {
+                        duration = int.Parse(TextBoxInput.Text) * 60;
+                    }
+                    else
+                    {
+                        duration = int.Parse(TextBoxInput.Text);
+                    }
+                    currentTime = duration;
+                    isRunning = 1;
+                    ButtonStartPause.Content = "Pause";
+                    await Task.Run(() => TimerStart(currentTime));
+                    if (!hasEnded)
+                    { } else
+                    {
+                        hasEnded = true;
+                        Reset();
+                    }
+                }
+                else if (isRunning == 0 && !isNewStart)
+                {
+                    isRunning = 1;
+                    ButtonStartPause.Content = "Pause";
+                    await Task.Run(() => TimerStart(currentTime));
+                    if (!hasEnded) { } else
+                    {
+                        hasEnded = true;
+                        Reset();
+                    }
+                }        
+                else
+                {
+                    isRunning = 0;
+                    isNewStart = false;
+                    ButtonStartPause.Content = "Start";
+                }
+
+            }
+        }
+
+        private void Reset()
+        {
+            isRunning = 0;
+            isNewStart = true;
+            currentTime = duration;
+            ButtonStartPause.Content = "Start";
+            if(hasEnded)
+            {
+                 SetToFile(MakeToString(0));
+            } else
+            {
+                int seconds;
+                if (Convert.ToBoolean(RadioMinutes.IsChecked))
+                {
+                    seconds = duration * 60;
+                } else
+                {
+                    seconds = duration / 60;
+                }
+                SetToFile(MakeToString(seconds));
             }
 
         }
-
         private void SetTimer(int currentTimeInS)
         {
             timer.Interval = currentTimeInS;
 
         }
-        private  void TimerStart(int seconds)
+        private void TimerStart(int seconds)
         {
             while (seconds != 0 && isRunning == 1)
             {
@@ -112,30 +150,25 @@ namespace SimpleTwitchTimer
                 System.Threading.Thread.Sleep(1000);
                 seconds--;
                 currentTime--;
-
-            }
-            if (seconds == 0)
-            {
-                isNewStart = true; //If Finished Set to Start all over again.
             }
         }
 
         private void ButtonReset_Click(object sender, RoutedEventArgs e)
         {
-            isRunning = 0;
-            isNewStart = true;
-            currentTime = duration;
-            SetToFile(MakeToString(currentTime));
+            hasEnded = false;
+            Reset();
         }
 
         private void RadioMinutes_Checked(object sender, RoutedEventArgs e)
         {
-
+            hasEnded = false;
+            Reset();
         }
 
         private void RadioSeconds_Checked(object sender, RoutedEventArgs e)
         {
-
+            hasEnded = false;
+            Reset();
         }
 
         public String MakeToString(int currentTime)
@@ -148,8 +181,6 @@ namespace SimpleTwitchTimer
         public void SetToFile(String content)
         {
             File.WriteAllText("Timer.txt", content);
-
-
         }
     }
 }

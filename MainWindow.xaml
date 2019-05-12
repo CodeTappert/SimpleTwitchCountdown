@@ -4,13 +4,14 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="MainWindow" Height="155" Width="400.5">
-    <Grid HorizontalAlignment="Left" Height="122" VerticalAlignment="Top" Width="390">
-        <TextBox Name="TextBoxInput" Height="60" Margin="8,8,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="248" RenderTransformOrigin="-0.212,-1.5" FontSize="40" TextChanged="TextBoxInput_TextChanged" VerticalContentAlignment="Center"
-                 HorizontalAlignment="Left" TextAlignment="Center" Text="500" PreviewTextInput="NumberValidationTextBox" MaxLength="6"/>
-        <RadioButton Name="RadioMinutes"  Content="Minutes" HorizontalAlignment="Left" Margin="261,10,0,0" VerticalAlignment="Top" Height="26" Width="100" FontSize="15" VerticalContentAlignment="Center" Checked="RadioMinutes_Checked"/>
-        <RadioButton Name="RadioSeconds" Content="Seconds" HorizontalAlignment="Left" Margin="261,41,0,0" VerticalAlignment="Top" Height="25" Width="100" FontSize="15" VerticalContentAlignment="Center" Checked="RadioSeconds_Checked"/>
-        <Button Name="ButtonStartPause" Content="Start" HorizontalAlignment="Left" Margin="8,71,0,0" VerticalAlignment="Top" Width="120" Height="40" Click="ButtonStartPause_Click"/>
-        <Button Name="ButtonReset" Content="Reset" HorizontalAlignment="Left" Margin="134,71,0,0" VerticalAlignment="Top" Width="120" Height="40" Click="ButtonReset_Click"/>
+        Title="SimpleTwitchCountdown" Height="252.333" Width="485.167">
+    <Grid HorizontalAlignment="Left" Height="221" VerticalAlignment="Top" Width="475" Background="{DynamicResource {x:Static SystemColors.InactiveCaptionBrushKey}}">
+        <TextBox Name="TextBoxInput" Height="95" Margin="8,8,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="352" RenderTransformOrigin="-0.212,-1.5" FontSize="50" TextChanged="TextBoxInput_TextChanged" VerticalContentAlignment="Center"
+                 HorizontalAlignment="Left" TextAlignment="Center" Text="" PreviewTextInput="NumberValidationTextBox" MaxLength="6" AutomationProperties.IsRequiredForForm="True"/>
+        <RadioButton Name="RadioMinutes"  Content="Minutes" HorizontalAlignment="Left" Margin="367,11,0,0" VerticalAlignment="Top" Height="41" Width="108" FontSize="20" VerticalContentAlignment="Center" Checked="RadioMinutes_Checked"/>
+        <RadioButton Name="RadioSeconds" Content="Seconds" HorizontalAlignment="Left" Margin="367,60,0,0" VerticalAlignment="Top" Height="40" Width="108" FontSize="20" VerticalContentAlignment="Center" Checked="RadioSeconds_Checked"/>
+        <Button Name="ButtonStartPause" Content="Start" HorizontalAlignment="Left" Margin="8,108,0,-9" VerticalAlignment="Top" Width="170" Height="63" Click="ButtonStartPause_Click" FontSize="20"/>
+        <Button Name="ButtonReset" Content="Reset" HorizontalAlignment="Left" Margin="187,108,0,-9" VerticalAlignment="Top" Width="170" Height="63" Click="ButtonReset_Click" FontSize="20"/>
+        <Label Content="https://github.com/CodeTappert/SimpleTimerForStreams" HorizontalAlignment="Left" Margin="10,176,0,10" Width="464" FontSize="15"/>
     </Grid>
 </Window>
