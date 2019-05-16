@@ -24,7 +24,7 @@ namespace SimpleTwitchTimer
     /// </summary>
     public partial class MainWindow : Window
     {
-        bool isNewStart = true,hasEnded;
+        bool isNewStart = true, hasEnded;
         byte isRunning;
         int duration, currentTime;
         System.Timers.Timer timer = new System.Timers.Timer();
@@ -47,6 +47,7 @@ namespace SimpleTwitchTimer
             //Check for Spaces and automaticly trim them.
             if (TextBoxInput.Text.Contains(" "))
             {
+                //Trim Spaces and then set the cursor again at the end of the input.
                 TextBoxInput.Text = TextBoxInput.Text.Trim(' ');
                 TextBoxInput.SelectionLength = 0;
                 TextBoxInput.SelectionStart = TextBoxInput.Text.Length + 1;
@@ -56,128 +57,154 @@ namespace SimpleTwitchTimer
         //PreCheck Input and allow only numbers (and sadly spaces) which is prevented in TextBoxInput_TextChanged
         private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
         {
-            Regex regex = new Regex("[^0-9]+");
+            Regex regex = new Regex("[^0-9]+"); //Only Numbers
             e.Handled = regex.IsMatch(e.Text);
         }
 
+        //When the Start Button is Pressed there is different behaviour depending on status
         private async void ButtonStartPause_Click(object sender, RoutedEventArgs e)
         {
             hasEnded = true;
+            //Empty Inputs are not allowed. Messagebox will be shown
             if (TextBoxInput.Text.Length == 0)
             {
                 MessageBox.Show("An empty Input is not allowed!", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             else
             {
-                Console.WriteLine(isNewStart);
+                //If it is not running and it was resettet/previous countdown has ended or first countdown
                 if (isRunning == 0 && isNewStart)
                 {
-                    if (Convert.ToBoolean(RadioMinutes.IsChecked))
-                    {
-                        duration = int.Parse(TextBoxInput.Text) * 60;
-                    }
+                    duration = GetInput();
+                    currentTime = duration;
+                    isRunning = 1; //Set it running
+                    ButtonStartPause.Content = "Pause"; //Change label on button
+                    await Task.Run(() => TimerStart(currentTime)); //wait until Timer is finished.
+                    if (!hasEnded)
+                    { }
                     else
                     {
-                        duration = int.Parse(TextBoxInput.Text);
-                    }
-                    currentTime = duration;
-                    isRunning = 1;
-                    ButtonStartPause.Content = "Pause";
-                    await Task.Run(() => TimerStart(currentTime));
-                    if (!hasEnded)
-                    { } else
-                    {
+                        //When it ended without interruptions then it will display 0:00 until a new one is started
                         hasEnded = true;
                         Reset();
                     }
                 }
+                //If it isnt running but was already running (after a pause) then it will be resumed.
                 else if (isRunning == 0 && !isNewStart)
                 {
+                    //Set it to running
                     isRunning = 1;
-                    ButtonStartPause.Content = "Pause";
-                    await Task.Run(() => TimerStart(currentTime));
-                    if (!hasEnded) { } else
+                    ButtonStartPause.Content = "Pause"; //Change the Button Label to Pause
+                    await Task.Run(() => TimerStart(currentTime)); //Wait for Finished Countdown
+                    if (!hasEnded) { }
+                    else
                     {
+                        //When it ended without interruptions then it will display 0:00 until a new one is started
                         hasEnded = true;
                         Reset();
                     }
-                }        
+                }
                 else
                 {
+                    //Set to not Running
                     isRunning = 0;
-                    isNewStart = false;
-                    ButtonStartPause.Content = "Start";
+                    hasEnded = false;
+                    isNewStart = false; //Change new Start to false so it will resume and not start over again
+                    ButtonStartPause.Content = "Resume"; //Change Button Label to resume
                 }
 
             }
         }
 
-        private void Reset()
+        //Get the UserInput and calculate it accordingly to the radio boxes
+        private int GetInput()
         {
-            isRunning = 0;
-            isNewStart = true;
-            currentTime = duration;
-            ButtonStartPause.Content = "Start";
-            if(hasEnded)
+            int duration;
+            //If there is no input than return 0.
+            if (TextBoxInput.Text.Length > 0)
             {
-                 SetToFile(MakeToString(0));
-            } else
-            {
-                int seconds;
+                //If Minutes Radio Box is checked we have to calculate it times 60
                 if (Convert.ToBoolean(RadioMinutes.IsChecked))
                 {
-                    seconds = duration * 60;
-                } else
-                {
-                    seconds = duration / 60;
+                    duration = int.Parse(TextBoxInput.Text) * 60;
                 }
-                SetToFile(MakeToString(seconds));
+                else
+                {
+                    duration = int.Parse(TextBoxInput.Text);
+                }
+                return duration;
+            }
+            else
+            {
+                return 0;
             }
 
         }
-        private void SetTimer(int currentTimeInS)
-        {
-            timer.Interval = currentTimeInS;
 
+        //Reset the Countdown. Depending on if it finished or was interrupted mid countdown
+        private void Reset()
+        {
+            isRunning = 0; //Set to not running
+            isNewStart = true; //Set that the next countdown starts all over again
+            currentTime = duration; //set current time to max time
+            ButtonStartPause.Content = "Start";
+            //If Countdown was finished without interrupts than show 00:00:00
+            if (hasEnded)
+            {
+                SetToFile(MakeToString(0));
+            }
+            //If it was interrupted mid countdown then show the max time again
+            else
+            {
+                SetToFile(MakeToString(duration));
+            }
         }
+
+        //The Timer, its a simple while loop that counts seconds down. Can be interruppted when isRunning is changing to 0.
         private void TimerStart(int seconds)
         {
             while (seconds != 0 && isRunning == 1)
             {
-                Console.WriteLine(seconds);
                 SetToFile(MakeToString(seconds));
 
-                System.Threading.Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(1000); //Wait 1 sec to generate the seconds counting.
                 seconds--;
                 currentTime--;
             }
         }
 
+        //Resets the Timer. When Button Reset is clicked
         private void ButtonReset_Click(object sender, RoutedEventArgs e)
         {
             hasEnded = false;
             Reset();
         }
 
+        //If Radio Boxes are changed then there should be the corret time shown. SetToFile makes this.
         private void RadioMinutes_Checked(object sender, RoutedEventArgs e)
         {
             hasEnded = false;
             Reset();
+            SetToFile(MakeToString(GetInput()));
         }
 
+        //If Radio Boxes are changed then there should be the corret time shown. SetToFile makes this.
         private void RadioSeconds_Checked(object sender, RoutedEventArgs e)
         {
             hasEnded = false;
             Reset();
+            SetToFile(MakeToString(GetInput()));
         }
 
-        public String MakeToString(int currentTime)
+        //Makes a String in the corret TimeFormat from an int which are seconds
+        public String MakeToString(int seconds)
         {
-            TimeSpan time = TimeSpan.FromSeconds(currentTime);
+            TimeSpan time = TimeSpan.FromSeconds(seconds);
             String str = time.ToString(@"hh\:mm\:ss");
             return str;
         }
 
+        //Writes a String to txtfile. With deleting what was in there
         public void SetToFile(String content)
         {
             File.WriteAllText("Timer.txt", content);
